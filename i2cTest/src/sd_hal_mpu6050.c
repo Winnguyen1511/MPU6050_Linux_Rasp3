@@ -68,7 +68,8 @@ SD_MPU6050_Result SD_MPU6050_Init(SD_MPU6050* DataStruct, SD_MPU6050_Device Devi
 
 
 	/* Format I2C address */
-	DataStruct->Address = MPU6050_I2C_ADDR | (uint8_t)DeviceNumber;
+	//DataStruct->Address = MPU6050_I2C_ADDR | (uint8_t)DeviceNumber;
+	DataStruct->Address = MPU6050_WHO_AM_I | (uint8_t)DeviceNumber;
 	uint8_t address = DataStruct->Address;
 
 	/* Check if device is connected */

@@ -38,7 +38,7 @@ int main(int argc, char **argv)
 
         printf("#%d:\n", i);
         printf("gx=%d, gy=%d, gz=%d\n", g_x, g_y, g_z);
-        printf("angleY=%.2f", angleY_from_accel);
+        printf("angleY=%.2f\n", angleY_from_accel);
         sleep(1);
     }
     

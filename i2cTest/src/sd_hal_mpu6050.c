@@ -377,11 +377,20 @@ int HAL_I2C_Master_Transmit(uint16_t DevAddress, uint8_t*pData, uint16_t Size)
 {
     int file;
     if((file=open("/dev/i2c-1", O_RDWR)) < 0)
+	{	
+		perror("open");
         return HAL_ERROR;
+	}
     if(ioctl(file, I2C_SLAVE, DevAddress) < 0)
+	{	
+		perror("ioctl");
         return HAL_ERROR;
+	}
     if(write(file, pData, Size)!=Size)
+    {	
+		perror("write");
         return HAL_ERROR;
+	}
 
     return HAL_OK;
 }
@@ -390,11 +399,20 @@ int HAL_I2C_Master_Receive(uint16_t DevAddress, uint8_t*pData, uint16_t Size)
 {
     int file;
     if((file=open("/dev/i2c-1", O_RDWR)) < 0)
+	{	
+		perror("open");
         return HAL_ERROR;
+	}
     if(ioctl(file, I2C_SLAVE, DevAddress) < 0)
+	{	
+		perror("open");
         return HAL_ERROR;
+	}
     if(read(file, pData, Size)!=Size)
+	{	
+		perror("open");
         return HAL_ERROR;
+	}
 
     return HAL_OK;
 }

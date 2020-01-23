@@ -9,7 +9,7 @@ float Accel_to_Angle(int16_t, int16_t, int16_t);
 
 int main(int argc, char **argv)
 {
-    int i;
+    int i, ic2_file;
     SD_MPU6050_Result result;
     SD_MPU6050 mpu;
     int16_t g_x, g_y, g_z ;
@@ -17,14 +17,14 @@ int main(int argc, char **argv)
 		
 	float g_y_real;
 	float angleY_from_accel;
-    result = SD_MPU6050_Init(&mpu, SD_MPU6050_Device_0,
+    result = SD_MPU6050_Init(&ic2_file, &mpu, SD_MPU6050_Device_0,
                             SD_MPU6050_Accelerometer_2G,
                             SD_MPU6050_Gyroscope_250s);
     printf("Test I2C program:\n");
     for(i = 0; i < 5; i++)
     {
-        SD_MPU6050_ReadGyroscope(&mpu);
-        SD_MPU6050_ReadAccelerometer(&mpu);
+        SD_MPU6050_ReadGyroscope(&ic2_file, &mpu);
+        SD_MPU6050_ReadAccelerometer(&ic2_file, &mpu);
         g_x = mpu.Gyroscope_X;
         g_y = mpu.Gyroscope_Y;
         g_z = mpu.Gyroscope_Z;

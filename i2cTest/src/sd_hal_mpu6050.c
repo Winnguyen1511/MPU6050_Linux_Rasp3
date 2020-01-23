@@ -59,7 +59,7 @@
 #define MPU6050_ACCE_SENS_8			((float) 4096)
 #define MPU6050_ACCE_SENS_16		((float) 2048)
 
-SD_MPU6050_Result SD_MPU6050_Init(SD_MPU6050* DataStruct, SD_MPU6050_Device DeviceNumber, SD_MPU6050_Accelerometer AccelerometerSensitivity, SD_MPU6050_Gyroscope GyroscopeSensitivity)
+SD_MPU6050_Result SD_MPU6050_Init(int *file, SD_MPU6050* DataStruct, SD_MPU6050_Device DeviceNumber, SD_MPU6050_Accelerometer AccelerometerSensitivity, SD_MPU6050_Gyroscope GyroscopeSensitivity)
 {
 	uint8_t WHO_AM_I = (uint8_t)MPU6050_WHO_AM_I;
 	uint8_t temp;
@@ -73,20 +73,20 @@ SD_MPU6050_Result SD_MPU6050_Init(SD_MPU6050* DataStruct, SD_MPU6050_Device Devi
 	uint8_t address = DataStruct->Address;
 
 	/* Check if device is connected */
-	if(HAL_I2C_IsDeviceReady(address,2)!=HAL_OK)
+	if(HAL_I2C_IsDeviceReady(file, address,2)!=HAL_OK)
 	{
 		return SD_MPU6050_Result_Error;
 	}
 	/* Check who am I */
 	//------------------
 		/* Send address */
-		if(HAL_I2C_Master_Transmit(address, &WHO_AM_I, 1) != HAL_OK)
+		if(HAL_I2C_Master_Transmit(file, address, &WHO_AM_I, 1) != HAL_OK)
 		{
 			return SD_MPU6050_Result_Error;
 		}
 
 		/* Receive multiple byte */
-		if(HAL_I2C_Master_Receive(address, &temp, 1) != HAL_OK)
+		if(HAL_I2C_Master_Receive(file, address, &temp, 1) != HAL_OK)
 		{
 			return SD_MPU6050_Result_Error;
 		}
@@ -106,26 +106,26 @@ SD_MPU6050_Result SD_MPU6050_Init(SD_MPU6050* DataStruct, SD_MPU6050_Device Devi
 		d[1] = 0x00;
 
 		/* Try to transmit via I2C */
-		if(HAL_I2C_Master_Transmit((uint16_t)address , (uint8_t *)d, 2) != HAL_OK)
+		if(HAL_I2C_Master_Transmit(file, (uint16_t)address , (uint8_t *)d, 2) != HAL_OK)
 		{
 					return SD_MPU6050_Result_Error;
 		}
 	//------------------
 
 	/* Set sample rate to 1kHz */
-	SD_MPU6050_SetDataRate(DataStruct, SD_MPU6050_DataRate_1KHz);
+	SD_MPU6050_SetDataRate(file, DataStruct, SD_MPU6050_DataRate_1KHz);
 
 	/* Config accelerometer */
-	SD_MPU6050_SetAccelerometer(DataStruct, AccelerometerSensitivity);
+	SD_MPU6050_SetAccelerometer(file, DataStruct, AccelerometerSensitivity);
 
 	/* Config Gyroscope */
-	SD_MPU6050_SetGyroscope(DataStruct, GyroscopeSensitivity);
+	SD_MPU6050_SetGyroscope(file, DataStruct, GyroscopeSensitivity);
 
 	/* Return OK */
 	return SD_MPU6050_Result_Ok;
 }
 
-SD_MPU6050_Result SD_MPU6050_SetDataRate(SD_MPU6050* DataStruct, uint8_t rate)
+SD_MPU6050_Result SD_MPU6050_SetDataRate(int *file, SD_MPU6050* DataStruct, uint8_t rate)
 {
 	uint8_t d[2];
 
@@ -135,7 +135,7 @@ SD_MPU6050_Result SD_MPU6050_SetDataRate(SD_MPU6050* DataStruct, uint8_t rate)
 	d[1] = rate;
 
 	/* Set data sample rate */
-	HAL_I2C_Master_Transmit((uint16_t)address,(uint8_t *)d,2);
+	HAL_I2C_Master_Transmit(file, (uint16_t)address,(uint8_t *)d,2);
 	/*{
 				return SD_MPU6050_Result_Error;
 	}*/
@@ -144,7 +144,7 @@ SD_MPU6050_Result SD_MPU6050_SetDataRate(SD_MPU6050* DataStruct, uint8_t rate)
 	return SD_MPU6050_Result_Ok;
 }
 
-SD_MPU6050_Result SD_MPU6050_SetAccelerometer(SD_MPU6050* DataStruct, SD_MPU6050_Accelerometer AccelerometerSensitivity)
+SD_MPU6050_Result SD_MPU6050_SetAccelerometer(int *file, SD_MPU6050* DataStruct, SD_MPU6050_Accelerometer AccelerometerSensitivity)
 {
 	uint8_t temp;
 	
@@ -152,16 +152,16 @@ SD_MPU6050_Result SD_MPU6050_SetAccelerometer(SD_MPU6050* DataStruct, SD_MPU6050
 	uint8_t regAdd =(uint8_t )MPU6050_ACCEL_CONFIG;
 
 	/* Config accelerometer */
-	HAL_I2C_Master_Transmit((uint16_t)address,&regAdd, 1);
+	HAL_I2C_Master_Transmit(file, (uint16_t)address,&regAdd, 1);
 	/*{
 				return SD_MPU6050_Result_Error;
 	}*/
-	HAL_I2C_Master_Receive((uint16_t)address, &temp, 1);
+	HAL_I2C_Master_Receive(file, (uint16_t)address, &temp, 1);
 	/*{
 				return SD_MPU6050_Result_Error;
 	}*/
 	temp = (temp & 0xE7) | (uint8_t)AccelerometerSensitivity << 3;
-	HAL_I2C_Master_Transmit((uint16_t)address,&temp, 1);
+	HAL_I2C_Master_Transmit(file, (uint16_t)address,&temp, 1);
 	/*{
 				return SD_MPU6050_Result_Error;
 	}*/
@@ -188,7 +188,7 @@ SD_MPU6050_Result SD_MPU6050_SetAccelerometer(SD_MPU6050* DataStruct, SD_MPU6050
 	return SD_MPU6050_Result_Ok;
 }
 
-SD_MPU6050_Result SD_MPU6050_SetGyroscope(SD_MPU6050* DataStruct, SD_MPU6050_Gyroscope GyroscopeSensitivity)
+SD_MPU6050_Result SD_MPU6050_SetGyroscope(int *file, SD_MPU6050* DataStruct, SD_MPU6050_Gyroscope GyroscopeSensitivity)
 {
 	uint8_t temp;
 	
@@ -196,16 +196,16 @@ SD_MPU6050_Result SD_MPU6050_SetGyroscope(SD_MPU6050* DataStruct, SD_MPU6050_Gyr
 	uint8_t regAdd =(uint8_t )MPU6050_GYRO_CONFIG;
 
 	/* Config gyroscope */
-	HAL_I2C_Master_Transmit((uint16_t)address,&regAdd, 1);
+	HAL_I2C_Master_Transmit(file, (uint16_t)address,&regAdd, 1);
 	/*{
 				return SD_MPU6050_Result_Error;
 	}*/
-	HAL_I2C_Master_Receive((uint16_t)address, &temp, 1);
+	HAL_I2C_Master_Receive(file, (uint16_t)address, &temp, 1);
 	/*{
 				return SD_MPU6050_Result_Error;
 	}*/
 	temp = (temp & 0xE7) | (uint8_t)GyroscopeSensitivity << 3;
-	HAL_I2C_Master_Transmit((uint16_t)address,&temp, 1);
+	HAL_I2C_Master_Transmit(file, (uint16_t)address,&temp, 1);
 	/*{
 				return SD_MPU6050_Result_Error;
 	}*/
@@ -230,7 +230,7 @@ SD_MPU6050_Result SD_MPU6050_SetGyroscope(SD_MPU6050* DataStruct, SD_MPU6050_Gyr
 	return SD_MPU6050_Result_Ok;
 }
 
-SD_MPU6050_Result SD_MPU6050_ReadAccelerometer(SD_MPU6050* DataStruct)
+SD_MPU6050_Result SD_MPU6050_ReadAccelerometer(int *file, SD_MPU6050* DataStruct)
 {
 	uint8_t data[6];
 	uint8_t reg = MPU6050_ACCEL_XOUT_H;
@@ -238,9 +238,9 @@ SD_MPU6050_Result SD_MPU6050_ReadAccelerometer(SD_MPU6050* DataStruct)
 	uint8_t address = DataStruct->Address;
 
 	/* Read accelerometer data */
-	HAL_I2C_Master_Transmit((uint16_t)address, &reg, 1);
+	HAL_I2C_Master_Transmit(file, (uint16_t)address, &reg, 1);
 
-	HAL_I2C_Master_Receive((uint16_t)address, data, 6);
+	HAL_I2C_Master_Receive(file, (uint16_t)address, data, 6);
 
 	/* Format */
 	DataStruct->Accelerometer_X = (int16_t)(data[0] << 8 | data[1]);
@@ -250,7 +250,7 @@ SD_MPU6050_Result SD_MPU6050_ReadAccelerometer(SD_MPU6050* DataStruct)
 	/* Return OK */
 	return SD_MPU6050_Result_Ok;
 }
-SD_MPU6050_Result SD_MPU6050_ReadGyroscope(SD_MPU6050* DataStruct)
+SD_MPU6050_Result SD_MPU6050_ReadGyroscope(int *file, SD_MPU6050* DataStruct)
 {
 	uint8_t data[6];
 	uint8_t reg = MPU6050_GYRO_XOUT_H;
@@ -258,9 +258,9 @@ SD_MPU6050_Result SD_MPU6050_ReadGyroscope(SD_MPU6050* DataStruct)
 	uint8_t address = DataStruct->Address;
 
 	/* Read gyroscope data */
-	HAL_I2C_Master_Transmit((uint16_t)address, &reg, 1);
+	HAL_I2C_Master_Transmit(file, (uint16_t)address, &reg, 1);
 
-	HAL_I2C_Master_Receive((uint16_t)address, data, 6);
+	HAL_I2C_Master_Receive(file, (uint16_t)address, data, 6);
 
 	/* Format */
 	DataStruct->Gyroscope_X = (int16_t)(data[0] << 8 | data[1]);
@@ -270,7 +270,7 @@ SD_MPU6050_Result SD_MPU6050_ReadGyroscope(SD_MPU6050* DataStruct)
 	/* Return OK */
 	return SD_MPU6050_Result_Ok;
 }
-SD_MPU6050_Result SD_MPU6050_ReadTemperature(SD_MPU6050* DataStruct)
+SD_MPU6050_Result SD_MPU6050_ReadTemperature(int *file, SD_MPU6050* DataStruct)
 {
 	uint8_t data[2];
 	int16_t temp;
@@ -279,9 +279,9 @@ SD_MPU6050_Result SD_MPU6050_ReadTemperature(SD_MPU6050* DataStruct)
 	uint8_t address = DataStruct->Address;
 
 	/* Read temperature */
-	HAL_I2C_Master_Transmit((uint16_t)address, &reg, 1);
+	HAL_I2C_Master_Transmit(file, (uint16_t)address, &reg, 1);
 
-	HAL_I2C_Master_Receive((uint16_t)address, data, 2);
+	HAL_I2C_Master_Receive(file, (uint16_t)address, data, 2);
 
 	/* Format temperature */
 	temp = (data[0] << 8 | data[1]);
@@ -290,7 +290,7 @@ SD_MPU6050_Result SD_MPU6050_ReadTemperature(SD_MPU6050* DataStruct)
 	/* Return OK */
 	return SD_MPU6050_Result_Ok;
 }
-SD_MPU6050_Result SD_MPU6050_ReadAll(SD_MPU6050* DataStruct)
+SD_MPU6050_Result SD_MPU6050_ReadAll(int *file, SD_MPU6050* DataStruct)
 {
 	uint8_t data[14];
 	int16_t temp;
@@ -299,9 +299,9 @@ SD_MPU6050_Result SD_MPU6050_ReadAll(SD_MPU6050* DataStruct)
 	uint8_t address = DataStruct->Address;
 
 	/* Read full raw data, 14bytes */
-	HAL_I2C_Master_Transmit((uint16_t)address, &reg, 1);
+	HAL_I2C_Master_Transmit(file, (uint16_t)address, &reg, 1);
 
-	HAL_I2C_Master_Receive((uint16_t)address, data, 14);
+	HAL_I2C_Master_Receive(file, (uint16_t)address, data, 14);
 
 	/* Format accelerometer data */
 	DataStruct->Accelerometer_X = (int16_t)(data[0] << 8 | data[1]);
@@ -320,7 +320,7 @@ SD_MPU6050_Result SD_MPU6050_ReadAll(SD_MPU6050* DataStruct)
 	/* Return OK */
 	return SD_MPU6050_Result_Ok;
 }
-SD_MPU6050_Result SD_MPU6050_EnableInterrupts(SD_MPU6050* DataStruct)
+SD_MPU6050_Result SD_MPU6050_EnableInterrupts(int *file, SD_MPU6050* DataStruct)
 {
 	uint8_t temp;
 	uint8_t reg[2] = {MPU6050_INT_ENABLE,0x21};
@@ -328,33 +328,33 @@ SD_MPU6050_Result SD_MPU6050_EnableInterrupts(SD_MPU6050* DataStruct)
 	uint8_t address = DataStruct->Address;
 
 	/* Enable interrupts for data ready and motion detect */
-	HAL_I2C_Master_Transmit((uint16_t)address, reg, 2);
+	HAL_I2C_Master_Transmit(file, (uint16_t)address, reg, 2);
 
 	uint8_t mpu_reg= MPU6050_INT_PIN_CFG;
 	/* Clear IRQ flag on any read operation */
-	HAL_I2C_Master_Transmit((uint16_t)address, &mpu_reg, 1);
+	HAL_I2C_Master_Transmit(file, (uint16_t)address, &mpu_reg, 1);
 
-	HAL_I2C_Master_Receive((uint16_t)address, &temp, 14);
+	HAL_I2C_Master_Receive(file, (uint16_t)address, &temp, 14);
 	temp |= 0x10;
 	reg[0] = MPU6050_INT_PIN_CFG;
 	reg[1] = temp;
-	HAL_I2C_Master_Transmit((uint16_t)address, reg, 2);
+	HAL_I2C_Master_Transmit(file, (uint16_t)address, reg, 2);
 
 	/* Return OK */
 	return SD_MPU6050_Result_Ok;
 }
-SD_MPU6050_Result SD_MPU6050_DisableInterrupts(SD_MPU6050* DataStruct)
+SD_MPU6050_Result SD_MPU6050_DisableInterrupts(int *file, SD_MPU6050* DataStruct)
 {
 	uint8_t reg[2] = {MPU6050_INT_ENABLE,0x00};
 	
 	uint8_t address = DataStruct->Address;
 
 	/* Disable interrupts */
-	HAL_I2C_Master_Transmit((uint16_t)address,reg,2!=HAL_OK);
+	HAL_I2C_Master_Transmit(file, (uint16_t)address,reg,2!=HAL_OK);
 	/* Return OK */
 	return SD_MPU6050_Result_Ok;
 }
-SD_MPU6050_Result SD_MPU6050_ReadInterrupts(SD_MPU6050* DataStruct, SD_MPU6050_Interrupt* InterruptsStruct)
+SD_MPU6050_Result SD_MPU6050_ReadInterrupts(int *file, SD_MPU6050* DataStruct, SD_MPU6050_Interrupt* InterruptsStruct)
 {
 	uint8_t read;
 
@@ -364,9 +364,9 @@ SD_MPU6050_Result SD_MPU6050_ReadInterrupts(SD_MPU6050* DataStruct, SD_MPU6050_I
 	
 	uint8_t address = DataStruct->Address;
 
-	HAL_I2C_Master_Transmit((uint16_t)address, &reg, 1);
+	HAL_I2C_Master_Transmit(file, (uint16_t)address, &reg, 1);
 
-	HAL_I2C_Master_Receive((uint16_t)address, &read, 14);
+	HAL_I2C_Master_Receive(file, (uint16_t)address, &read, 14);
 
 	/* Fill value */
 	InterruptsStruct->Status = read;
@@ -374,20 +374,9 @@ SD_MPU6050_Result SD_MPU6050_ReadInterrupts(SD_MPU6050* DataStruct, SD_MPU6050_I
 	return SD_MPU6050_Result_Ok;
 }
 
-int HAL_I2C_Master_Transmit(uint16_t DevAddress, uint8_t*pData, uint16_t Size)
+int HAL_I2C_Master_Transmit(int *file, uint16_t DevAddress, uint8_t*pData, uint16_t Size)
 {
-    int file;
-    if((file=open("/dev/i2c-1", O_RDWR)) < 0)
-	{	
-		perror("open");
-        return HAL_ERROR;
-	}
-    if(ioctl(file, I2C_SLAVE, DevAddress) < 0)
-	{	
-		perror("ioctl");
-        return HAL_ERROR;
-	}
-    if(write(file, pData, Size)!=Size)
+    if(write(*file, pData, Size)!=Size)
     {	
 		perror("write");
         return HAL_ERROR;
@@ -396,20 +385,10 @@ int HAL_I2C_Master_Transmit(uint16_t DevAddress, uint8_t*pData, uint16_t Size)
     return HAL_OK;
 }
 
-int HAL_I2C_Master_Receive(uint16_t DevAddress, uint8_t*pData, uint16_t Size)
+int HAL_I2C_Master_Receive(int *file, uint16_t DevAddress, uint8_t*pData, uint16_t Size)
 {
-    int file;
-    if((file=open("/dev/i2c-1", O_RDWR)) < 0)
-	{	
-		perror("open");
-        return HAL_ERROR;
-	}
-    if(ioctl(file, I2C_SLAVE, DevAddress) < 0)
-	{	
-		perror("ioctl");
-        return HAL_ERROR;
-	}
-    if(read(file, pData, Size)!=Size)
+
+    if(read(*file, pData, Size)!=Size)
 	{	
 		perror("read");
         return HAL_ERROR;
@@ -418,13 +397,20 @@ int HAL_I2C_Master_Receive(uint16_t DevAddress, uint8_t*pData, uint16_t Size)
     return HAL_OK;
 }
 
-int HAL_I2C_IsDeviceReady(uint16_t DevAddress, uint32_t Trials)
+int HAL_I2C_IsDeviceReady(int *file, uint16_t DevAddress, uint32_t Trials)
 {
-    int file, i;
-    if((file=open("/dev/i2c-1", O_RDWR)) < 0)
-        return HAL_ERROR;
-    for(i = 0; i < Trials; i++)
-        if(ioctl(file, I2C_SLAVE, DevAddress) >= 0)
-            return HAL_OK;
-    return HAL_ERROR;
+    if((*file=open("/dev/i2c-1", O_RDWR)) < 0)
+	{
+		printf("open: Failed to open the bus i2c-1\n");
+		return HAL_ERROR;
+	}
+        
+    //for(i = 0; i < Trials; i++)
+    if(ioctl(*file, I2C_SLAVE, DevAddress) < 0)
+	{
+		printf("ioctl: Failed to connect to the device\n");
+		return HAL_ERROR;
+	}
+            
+    return HAL_OK;
 }

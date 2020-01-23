@@ -406,7 +406,7 @@ int HAL_I2C_IsDeviceReady(int *file, uint16_t DevAddress, uint32_t Trials)
 	}
         
     //for(i = 0; i < Trials; i++)
-    if(ioctl(*file, I2C_SLAVE, DevAddress) < 0)
+    if(ioctl(*file, I2C_SLAVE, 0x68) < 0)
 	{
 		printf("ioctl: Failed to connect to the device\n");
 		return HAL_ERROR;

@@ -21,7 +21,7 @@ int main(int argc, char **argv)
                             SD_MPU6050_Accelerometer_2G,
                             SD_MPU6050_Gyroscope_250s);
     printf("Test I2C program:\n");
-    for(i = 0; i < 5; i++)
+    for(i = 0; ; i++)
     {
         SD_MPU6050_ReadGyroscope(&ic2_file, &mpu);
         SD_MPU6050_ReadAccelerometer(&ic2_file, &mpu);
@@ -39,7 +39,7 @@ int main(int argc, char **argv)
         printf("#%d:\n", i);
         printf("gx=%d, gy=%d, gz=%d\n", g_x, g_y, g_z);
         printf("angleY=%.2f\n", angleY_from_accel);
-        sleep(1);
+        usleep(200000);
     }
     
 

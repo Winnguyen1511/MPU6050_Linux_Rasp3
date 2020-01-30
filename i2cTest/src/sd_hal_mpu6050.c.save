@@ -376,11 +376,6 @@ SD_MPU6050_Result SD_MPU6050_ReadInterrupts(int *file, SD_MPU6050* DataStruct, S
 
 int HAL_I2C_Master_Transmit(int *file, uint16_t DevAddress, uint8_t*pData, uint16_t Size)
 {
-    if(ioctl(*file, I2C_SLAVE, DevAddress) < 0)
-    {
-	printf("ioctl: Failed to connect to device\n");
-	return HAL_ERROR;
-    }
     if(write(*file, pData, Size)!=Size)
     {	
 		perror("write");
@@ -392,11 +387,7 @@ int HAL_I2C_Master_Transmit(int *file, uint16_t DevAddress, uint8_t*pData, uint1
 
 int HAL_I2C_Master_Receive(int *file, uint16_t DevAddress, uint8_t*pData, uint16_t Size)
 {
-    if(ioctl(*file, I2C_SLAVE, DevAddress) < 0)
-    {
-	printf("ioctl: Failed to connect to device\n");
-	return HAL_ERROR;
-    }
+
     if(read(*file, pData, Size)!=Size)
 	{	
 		perror("read");

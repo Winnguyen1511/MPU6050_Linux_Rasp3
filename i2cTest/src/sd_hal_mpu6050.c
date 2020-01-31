@@ -68,8 +68,8 @@ SD_MPU6050_Result SD_MPU6050_Init(int *file, SD_MPU6050* DataStruct, SD_MPU6050_
 
 
 	/* Format I2C address */
-//	DataStruct->Address = MPU6050_I2C_ADDR | (uint8_t)DeviceNumber;
-	DataStruct->Address = MPU6050_I_AM | (uint8_t)DeviceNumber;
+	DataStruct->Address = (MPU6050_I2C_ADDR | (uint8_t)DeviceNumber) >> 1;
+//	DataStruct->Address = MPU6050_I_AM | (uint8_t)DeviceNumber;
 	uint8_t address = DataStruct->Address;
 
 	/* Check if device is connected */
@@ -408,6 +408,7 @@ int HAL_I2C_Master_Receive(int *file, uint16_t DevAddress, uint8_t*pData, uint16
 
 int HAL_I2C_IsDeviceReady(int *file, uint16_t DevAddress, uint32_t Trials)
 {
+    
     if((*file=open("/dev/i2c-1", O_RDWR)) < 0)
 	{
 		printf("open: Failed to open the bus i2c-1\n");
